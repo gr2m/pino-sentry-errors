@@ -49,6 +49,7 @@
     "@typescript-eslint/parser": "^2.3.2",
     "eslint": "^6.8.0",
     "pino": "^5.13.1",
+    "semantic-release": "^17.1.1",
     "typescript": "^3.6.3"
   }
 }
