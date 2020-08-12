@@ -1,22 +1,24 @@
 {
-  "name": "pino-sentry",
+  "name": "pino-sentry-errors",
   "description": "@sentry/node transport for pino logger",
-  "version": "0.3.0",
-  "author": "Andrew Avdeev <andrewww.avdeev@gmail.com>",
+  "version": "0.0.0-development",
+  "author": "Gregor Martynus (https://twitter.com/gr2m)",
   "keywords": [
     "logger",
-    "loggly",
-    "logging",
-    "node",
-    "tools",
     "sentry",
     "transport",
     "pino"
   ],
+  "contributors": [
+    {
+      "name": "Andrew Avdeev",
+      "email": "andrewww.avdeev@gmail.com"
+    }
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "pino-sentry": "dist/cli.js"
+    "pino-sentry-errors": "dist/cli.js"
   },
   "scripts": {
     "clean": "rm -rf dist",
@@ -24,12 +26,8 @@
     "lint": "eslint src/**/*.ts",
     "prepublishOnly": "npm run lint && npm run build"
   },
-  "repository": "https://github.com/aandrewww/pino-sentry.git",
+  "repository": "https://github.com/gr2m/pino-sentry-errors",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/aandrewww/pino-sentry/issues"
-  },
-  "homepage": "https://github.com/aandrewww/pino-sentry#readme",
   "engines": {
     "node": ">=10"
   },
@@ -51,6 +49,7 @@
     "@typescript-eslint/parser": "^2.3.2",
     "eslint": "^6.8.0",
     "pino": "^5.13.1",
+    "semantic-release": "^17.1.1",
     "typescript": "^3.6.3"
   }
 }
