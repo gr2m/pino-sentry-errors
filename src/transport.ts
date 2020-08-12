@@ -67,6 +67,11 @@ export class PinoSentryTransport {
 
   public prepareAndGo(chunk: any, cb: any): void {
     const severity = this.getLogSeverity(chunk.level);
+
+    if (!this.shouldLogException(severity)) {
+      return;
+    }
+
     const tags = chunk.tags || {};
 
     if (chunk.reqId) {
@@ -93,23 +98,15 @@ export class PinoSentryTransport {
     });
 
     // Capturing Errors / Exceptions
-    if (this.shouldLogException(severity)) {
-      const error =
-        message instanceof Error
-          ? message
-          : new ExtendedError({ message, stack });
+    const error =
+      message instanceof Error
+        ? message
+        : new ExtendedError({ message, stack });
 
-      setImmediate(() => {
-        Sentry.captureException(error);
-        cb();
-      });
-    } else {
-      // Capturing Messages
-      setImmediate(() => {
-        Sentry.captureMessage(message, severity);
-        cb();
-      });
-    }
+    setImmediate(() => {
+      Sentry.captureException(error);
+      cb();
+    });
   }
 
   private withDefaults(options: Sentry.NodeOptions = {}): Sentry.NodeOptions {
