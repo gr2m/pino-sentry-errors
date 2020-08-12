@@ -1,9 +1,9 @@
-import stream  from 'stream';
-import split from 'split2';
-import pump from 'pump';
-import through from 'through2';
-import pify from 'pify';
-import * as Sentry from '@sentry/node';
+import stream from "stream";
+import split from "split2";
+import pump from "pump";
+import through from "through2";
+import pify from "pify";
+import * as Sentry from "@sentry/node";
 
 class ExtendedError extends Error {
   public constructor(info: any) {
@@ -15,7 +15,7 @@ class ExtendedError extends Error {
 }
 
 function writeToStdout() {
-  return through(function(chunk, _enc, cb) {
+  return through(function (chunk, _enc, cb) {
     this.push(chunk);
     process.stdout.write(chunk);
     cb();
@@ -23,12 +23,12 @@ function writeToStdout() {
 }
 
 const SEVERITIES_MAP = {
-  10: Sentry.Severity.Debug,   // pino: trace
-  20: Sentry.Severity.Debug,   // pino: debug
-  30: Sentry.Severity.Info,    // pino: info
+  10: Sentry.Severity.Debug, // pino: trace
+  20: Sentry.Severity.Debug, // pino: debug
+  30: Sentry.Severity.Info, // pino: info
   40: Sentry.Severity.Warning, // pino: warn
-  50: Sentry.Severity.Error,   // pino: error
-  60: Sentry.Severity.Fatal,   // pino: fatal
+  50: Sentry.Severity.Error, // pino: error
+  60: Sentry.Severity.Fatal, // pino: fatal
   // Support for useLevelLabels
   // https://github.com/pinojs/pino/blob/master/docs/api.md#uselevellabels-boolean
   trace: Sentry.Severity.Debug,
@@ -38,7 +38,6 @@ const SEVERITIES_MAP = {
   error: Sentry.Severity.Error,
   fatal: Sentry.Severity.Fatal,
 } as const;
-
 
 export class PinoSentryTransport {
   public constructor(options?: Sentry.NodeOptions) {
@@ -55,8 +54,7 @@ export class PinoSentryTransport {
 
   public parse(line: any) {
     const chunk = JSON.parse(line);
-    const cb = () => {
-    };
+    const cb = () => {};
 
     this.prepareAndGo(chunk, cb);
   }
@@ -86,17 +84,20 @@ export class PinoSentryTransport {
     // const user = chunk.user || {};
 
     const message = chunk.msg;
-    const stack = chunk.stack || '';
+    const stack = chunk.stack || "";
 
-    Sentry.configureScope(scope => {
+    Sentry.configureScope((scope) => {
       if (this.isObject(tags)) {
-        Object.keys(tags).forEach(tag => scope.setExtra(tag, tags[tag]));
+        Object.keys(tags).forEach((tag) => scope.setExtra(tag, tags[tag]));
       }
     });
 
     // Capturing Errors / Exceptions
     if (this.shouldLogException(severity)) {
-      const error = message instanceof Error ? message : new ExtendedError({ message, stack });
+      const error =
+        message instanceof Error
+          ? message
+          : new ExtendedError({ message, stack });
 
       setImmediate(() => {
         Sentry.captureException(error);
@@ -113,11 +114,12 @@ export class PinoSentryTransport {
 
   private withDefaults(options: Sentry.NodeOptions = {}): Sentry.NodeOptions {
     return {
-      dsn: process.env.SENTRY_DSN || '',
+      dsn: process.env.SENTRY_DSN || "",
       // npm_package_name will be available if ran with
       // from a "script" field in package.json.
-      serverName: process.env.npm_package_name || 'pino-sentry',
-      environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'production',
+      serverName: process.env.npm_package_name || "pino-sentry-errors",
+      environment:
+        process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV || "production",
       debug: !!process.env.SENTRY_DEBUG || false,
       sampleRate: 1.0,
       maxBreadcrumbs: 100,
@@ -127,17 +129,19 @@ export class PinoSentryTransport {
 
   private isObject(obj: any): boolean {
     const type = typeof obj;
-    return type === 'function' || type === 'object' && !!obj;
+    return type === "function" || (type === "object" && !!obj);
   }
 
   private shouldLogException(level: Sentry.Severity): boolean {
     return level === Sentry.Severity.Fatal || level === Sentry.Severity.Error;
   }
-};
+}
 
-export function createWriteStreamAsync(options: Sentry.NodeOptions = {}): PromiseLike<stream.Transform> {
+export function createWriteStreamAsync(
+  options: Sentry.NodeOptions = {}
+): PromiseLike<stream.Transform> {
   if (!options.dsn && !process.env.SENTRY_DSN) {
-    throw Error('Sentry DSN missing');
+    throw Error("Sentry DSN missing");
   }
 
   const transport = new PinoSentryTransport(options);
@@ -150,21 +154,22 @@ export function createWriteStreamAsync(options: Sentry.NodeOptions = {}): Promis
       try {
         return JSON.parse(line);
       } catch (e) {
-        throw Error('logs should be in json format');
+        throw Error("logs should be in json format");
       }
     }),
     sentryTransformer
   );
-};
+}
 
-
-export function createWriteStream(options: Sentry.NodeOptions = {}): stream.Transform & { transport: PinoSentryTransport } {
+export function createWriteStream(
+  options: Sentry.NodeOptions = {}
+): stream.Transform & { transport: PinoSentryTransport } {
   if (!options.dsn && !process.env.SENTRY_DSN) {
-    throw Error('Sentry DSN missing');
+    throw Error("Sentry DSN missing");
   }
 
   const transport = new PinoSentryTransport(options);
   const sentryParse = transport.parse.bind(transport);
 
   return Object.assign(split(sentryParse), { transport });
-};
+}
