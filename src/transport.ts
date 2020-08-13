@@ -69,6 +69,7 @@ export class PinoSentryTransport {
     const severity = this.getLogSeverity(chunk.level);
 
     if (!this.shouldLogException(severity)) {
+      setImmediate(() => cb());
       return;
     }
 
